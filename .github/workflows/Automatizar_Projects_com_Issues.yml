@@ -20,7 +20,12 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // Buscando issue atual e sub-issues
+            // IDs das colunas do Project V2
+            const BACKLOG_COLUMN_ID = "ID_DA_COLUNA_BACKLOG";
+            const READY_COLUMN_ID = "ID_DA_COLUNA_READY";
+            const DONE_COLUMN_ID = "ID_DA_COLUNA_DONE";
+
+            // Consulta issue e sub-issues
             const query = `
               query($owner: String!, $repo: String!, $number: Int!) {
                 repository(owner: $owner, name: $repo) {
@@ -34,22 +39,43 @@ jobs:
                 }
               }
             `;
-
             const result = await github.graphql(query, { owner, repo, number: issueNumber });
             const issue = result.repository.issue;
-
-            // Checa labels
             const labels = issue.labels.nodes.map(l => l.name);
+
+            // Função para adicionar item ao Project V2
+            async function addItemToColumn(columnId) {
+              await github.graphql(`
+                mutation($columnId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: {projectId: $columnId, contentId: $contentId}) {
+                    item { id }
+                  }
+                }
+              `, { columnId, contentId: issue.id });
+              console.log(`✅ Issue #${issueNumber} adicionada à coluna.`);
+            }
+
+            // Função para mover item no Project V2
+            async function moveItem(columnId) {
+              await github.graphql(`
+                mutation($itemId: ID!, $columnId: ID!) {
+                  moveProjectV2Item(input: {itemId: $itemId, destinationId: $columnId}) {
+                    clientMutationId
+                  }
+                }
+              `, { itemId: issue.id, columnId });
+              console.log(`✅ Issue #${issueNumber} movida para a coluna.`);
+            }
 
             // Workflow: user-story → Backlog, task → Ready
             if (labels.includes('user-story')) {
-              console.log(`User-story #${issueNumber} detected → Backlog`);
-              // Aqui você pode adicionar a mutation para mover para Backlog
+              console.log(`User-story #${issueNumber} → Backlog`);
+              await addItemToColumn(BACKLOG_COLUMN_ID);
             }
 
             if (labels.includes('task')) {
-              console.log(`Task #${issueNumber} detected → Ready`);
-              // Aqui você pode adicionar a mutation para mover para Ready
+              console.log(`Task #${issueNumber} → Ready`);
+              await addItemToColumn(READY_COLUMN_ID);
             }
 
             // Se for user-story, checa sub-issues
@@ -58,8 +84,8 @@ jobs:
               const openSubIssues = subIssues.filter(si => si.state === "OPEN");
 
               if (openSubIssues.length === 0 && subIssues.length > 0) {
-                console.log(`✅ Todas as sub-issues fechadas. Move user-story #${issueNumber} para Done.`);
-                // Mutation para mover item no Project V2 → Done
+                console.log(`✅ Todas as sub-issues fechadas. Move user-story #${issueNumber} → Done.`);
+                await moveItem(DONE_COLUMN_ID);
               } else {
                 console.log(`⏳ User-story #${issueNumber} ainda tem ${openSubIssues.length} sub-issues abertas.`);
               }
