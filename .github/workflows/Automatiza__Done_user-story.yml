@@ -26,7 +26,8 @@ jobs:
 
             for (const issue of issues) {
               // Verifica se é um issue pai (tem checklist ou linked issues)
-              let bodyTasks = (issue.body.match(/- \[ \]/g) || []).length
+              const bodyText = issue.body || "";
+              const bodyTasks = (bodyText.match(/- \[ \]/g) || []).length;
 
               // Verifica sub-issues vinculados via timeline events
               const timeline = await github.rest.issues.listEventsForTimeline({
