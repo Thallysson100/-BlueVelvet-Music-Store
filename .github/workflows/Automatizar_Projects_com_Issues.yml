@@ -1,0 +1,26 @@
+name: Auto add issues to project
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  add_to_project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add issue with label "task" → Ready
+        if: contains(github.event.issue.labels.*.name, 'task')
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/users/Thallysson100/projects/1
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          status: "Ready"
+
+      - name: Add issue with label "user-history" → Backlog
+        if: contains(github.event.issue.labels.*.name, 'user-history')
+        uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/users/Thallysson100/projects/1
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          status: "Backlog"
