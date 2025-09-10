@@ -1,8 +1,6 @@
 name: Auto-complete parent issues
 
 on:
-  schedule:
-    - cron: '*/30 * * * *' # roda a cada 30 minutos
   issues:
     types: [edited, closed]  # dispara quando sub-issue é editada ou fechada
 
