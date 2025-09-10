@@ -34,14 +34,15 @@ jobs:
                 const repo = context.repo.repo;
                 const issueNumber = context.issue.number;
             
-                // 1) Buscar o issue com informações (inclui issue.node id)
+                // ===== 1) Buscar o issue atual com dados essenciais =====
                 const issueQuery = `
                   query($owner:String!, $repo:String!, $number:Int!) {
                     repository(owner:$owner, name:$repo) {
                       issue(number:$number) {
-                        id        # node id do issue (contentId)
+                        id
                         number
                         title
+                        state
                         labels(first:20){ nodes{ name } }
                         trackedIssues(first:50) { nodes { number state id } }
                       }
@@ -50,9 +51,12 @@ jobs:
                 const iq = await github.graphql(issueQuery, { owner, repo, number: issueNumber });
                 const issue = iq.repository.issue;
                 const labels = (issue.labels.nodes || []).map(n => n.name);
+                const isClosed = issue.state === "CLOSED";
             
-                // 2) Função para encontrar project item (se já existir), retornando projectItem.id
-                async function findProjectItemForIssue() {
+                // ===== helpers =====
+            
+                // encontra project item (projectItem.id) para um dado issueNumber
+                async function findProjectItemForIssueNumber(targetIssueNumber) {
                   const query = `
                     query($projectId: ID!, $first:Int!) {
                       node(id:$projectId) {
@@ -63,6 +67,7 @@ jobs:
                               content {
                                 ... on Issue {
                                   number
+                                  id
                                 }
                               }
                             }
@@ -70,15 +75,14 @@ jobs:
                         }
                       }
                     }`;
-                  const res = await github.graphql(query, { projectId: PROJECT_ID, first: 100 });
+                  const res = await github.graphql(query, { projectId: PROJECT_ID, first: 200 });
                   const items = res.node.items.nodes || [];
-                  const found = items.find(it => it.content && it.content.number === issue.number);
+                  const found = items.find(it => it.content && it.content.number === targetIssueNumber);
                   return found ? found.id : null;
                 }
             
-                // 3) Função para adicionar issue ao project (retorna projectItemId)
-                async function addIssueToProject() {
-                  // tenta adicionar; se já existir, fallback pra procurar
+                // adiciona issue (contentId) ao project e retorna projectItemId
+                async function addIssueToProjectByContentId(contentId) {
                   try {
                     const addMutation = `
                       mutation($projectId: ID!, $contentId: ID!) {
@@ -86,15 +90,27 @@ jobs:
                           item { id }
                         }
                       }`;
-                    const add = await github.graphql(addMutation, { projectId: PROJECT_ID, contentId: issue.id });
+                    const add = await github.graphql(addMutation, { projectId: PROJECT_ID, contentId });
                     return add.addProjectV2ItemById.item.id;
                   } catch (e) {
-                    // se falhar (por ex já existe), procura item
-                    return await findProjectItemForIssue();
+                    // se já existe ou falhar, tente procurar
+                    return null;
                   }
                 }
             
-                // 4) Função para setar o campo Status do item (usa projectItemId)
+                // garante que exista projectItemId para um issue (retorna projectItemId)
+                async function ensureProjectItemFor(issueNodeId, issueNum) {
+                  // tenta achar
+                  let pid = await findProjectItemForIssueNumber(issueNum);
+                  if (pid) return pid;
+                  // tenta adicionar
+                  pid = await addIssueToProjectByContentId(issueNodeId);
+                  if (pid) return pid;
+                  // fallback: procurar de novo
+                  return await findProjectItemForIssueNumber(issueNum);
+                }
+            
+                // seta o status do item (projectItemId) para a optionId
                 async function setStatus(projectItemId, optionId) {
                   const mutation = `
                     mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
@@ -115,51 +131,112 @@ jobs:
                   });
                 }
             
-                // 5) A lógica principal
-                // - se issue é task -> adicionar ao project e setar Ready
-                // - se issue é user-story -> adicionar ao project e setar Backlog
-                // - se user-story e todas sub-issues fechadas -> setar Done
-            
-                let projectItemId = await findProjectItemForIssue();
-                if (!projectItemId) {
-                  // tenta adicionar (retorna project item id)
-                  projectItemId = await addIssueToProject();
-                }
-            
-                if (!projectItemId) {
-                  console.log(`Não foi possível obter project item para issue #${issue.number}.`);
-                  return;
-                }
-            
+                // ===== 2) Lógica para tasks (não mover CLOSED para Ready) =====
+                // Não retornamos cedo: mesmo que seja task e esteja closed, precisamos
+                // checar parents para possivelmente movê-los para Done.
                 if (labels.includes('task')) {
-                  console.log(`Issue #${issue.number} tem label task → adicionando e setando Ready`);
-                  await setStatus(projectItemId, OPTION_READY_ID);
-                  return;
+                  if (!isClosed) {
+                    // se a task está aberta, adiciona ao project (se necessário) e seta Ready
+                    const myProjectItem = await ensureProjectItemFor(issue.id, issue.number);
+                    if (myProjectItem) {
+                      console.log(`Issue task #${issue.number} aberta → setando Ready`);
+                      await setStatus(myProjectItem, OPTION_READY_ID);
+                    } else {
+                      console.log(`Não foi possível garantir project item para task #${issue.number}`);
+                    }
+                  } else {
+                    console.log(`Task #${issue.number} está fechada → não setando Ready`);
+                  }
                 }
             
+                // ===== 3) Lógica para user-story se o evento for nele mesmo (criação/rotulagem) =====
                 if (labels.includes('user-story')) {
-                  console.log(`Issue #${issue.number} é user-story → adicionando e setando Backlog (se aplicável)`);
+                  // garante item no project e seta Backlog (quando apropriado)
+                  const myProjectItem = await ensureProjectItemFor(issue.id, issue.number);
+                  if (myProjectItem) {
+                    console.log(`User-story #${issue.number} → setando Backlog`);
+                    await setStatus(myProjectItem, OPTION_BACKLOG_ID);
+                  } else {
+                    console.log(`Não foi possível garantir project item para user-story #${issue.number}`);
+                  }
             
-                  // conta sub-issues vinculadas abertas
+                  // também, se já não houver sub-issues abertos e existirem sub-issues -> Done
                   const tracked = issue.trackedIssues.nodes || [];
                   const openTracked = tracked.filter(si => si.state === "OPEN");
-            
-                  // garante Backlog (quando é criado/rotulado)
-                  await setStatus(projectItemId, OPTION_BACKLOG_ID);
-            
                   if (tracked.length > 0 && openTracked.length === 0) {
-                    console.log(`Todas sub-issues fechadas → setando Done`);
-                    await setStatus(projectItemId, OPTION_DONE_ID);
+                    console.log(`Todas sub-issues do user-story #${issue.number} estão fechadas → setando Done`);
+                    const parentItem = await ensureProjectItemFor(issue.id, issue.number);
+                    if (parentItem) await setStatus(parentItem, OPTION_DONE_ID);
                   } else {
-                    console.log(`User-story tem ${openTracked.length} sub-issues abertas.`);
+                    console.log(`User-story #${issue.number} tem ${openTracked.length} sub-issues abertas.`);
                   }
-                  return;
                 }
             
-                console.log(`Issue #${issue.number} não tem label task nem user-story → nada a fazer.`);
+                // ===== 4) Se o evento foi em uma task que acabou de fechar, atualizar seus parents =====
+                // Para encontrar parents, varremos issues do repo e buscamos quem tem trackedIssues apontando para esta task.
+                // (Essa varredura é necessária porque o sub-issue conhece seus filhos, mas não necessariamente o pai)
+                if (isClosed) {
+                  // buscar issues do repo (página inicial — ajuste first se necessário)
+                  const parentScanQuery = `
+                    query($owner:String!, $repo:String!) {
+                      repository(owner:$owner, name:$repo) {
+                        issues(first:200, states:[OPEN, CLOSED]) {
+                          nodes {
+                            id
+                            number
+                            labels(first:10){ nodes{ name } }
+                            trackedIssues(first:200) {
+                              nodes { number state id }
+                            }
+                          }
+                        }
+                      }
+                    }`;
+                  const sc = await github.graphql(parentScanQuery, { owner, repo });
+                  const issues = sc.repository.issues.nodes || [];
+            
+                  // encontrar possíveis parents (issues cujo trackedIssues contenham a task atual)
+                  const parents = issues.filter(i => {
+                    const t = (i.trackedIssues && i.trackedIssues.nodes) || [];
+                    return t.some(child => child.number === issue.number);
+                  });
+            
+                  if (parents.length === 0) {
+                    console.log(`Nenhum parent encontrado que referencie a task #${issue.number}`);
+                  }
+            
+                  for (const parent of parents) {
+                    // opcional: verificar que parent tem label 'user-story' (só então atuamos)
+                    const parentLabels = (parent.labels && parent.labels.nodes || []).map(l=>l.name);
+                    if (!parentLabels.includes('user-story')) {
+                      console.log(`Parent #${parent.number} não tem label 'user-story' — pulando.`);
+                      continue;
+                    }
+            
+                    const tracked = parent.trackedIssues.nodes || [];
+                    const openTracked = tracked.filter(si => si.state === "OPEN");
+            
+                    const parentProjectItem = await ensureProjectItemFor(parent.id, parent.number);
+                    if (!parentProjectItem) {
+                      console.log(`Não foi possível garantir project item para parent #${parent.number}`);
+                      continue;
+                    }
+            
+                    if (tracked.length > 0 && openTracked.length === 0) {
+                      console.log(`Todos sub-issues de parent #${parent.number} fechados → setando Done`);
+                      await setStatus(parentProjectItem, OPTION_DONE_ID);
+                    } else {
+                      console.log(`Parent #${parent.number} ainda tem ${openTracked.length} sub-issues abertas → não movendo para Done`);
+                      // opcional: garantir que parent esteja em Backlog se desejar
+                      // await setStatus(parentProjectItem, OPTION_BACKLOG_ID);
+                    }
+                  }
+                }
+            
+                console.log("Fluxo finalizado com sucesso.");
+            
               } catch (err) {
                 console.log("Erro no script:", err);
                 throw err;
               }
             })();
-            
