@@ -1,26 +1,66 @@
-name: Auto add issues to project
+name: GitHub Projects Automation
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, edited, closed]
 
 jobs:
-  add_to_project:
+  update-projects:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Add issue with label "task" → Ready
-        if: contains(github.event.issue.labels.*.name, 'task')
-        uses: actions/add-to-project@v0.5.0
-        with:
-          project-url: https://github.com/users/Thallysson100/projects/1
-          github-token: ${{ secrets.PROJECT_TOKEN }}
-          status: "Ready"
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Add issue with label "user-history" → Backlog
-        if: contains(github.event.issue.labels.*.name, 'user-history')
-        uses: actions/add-to-project@v0.5.0
+      - name: Handle issues in Projects V2
+        uses: actions/github-script@v7
         with:
-          project-url: https://github.com/users/Thallysson100/projects/1
           github-token: ${{ secrets.PROJECT_TOKEN }}
-          status: "Backlog"
+          script: |
+            const issueNumber = context.issue.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Buscando issue atual e sub-issues
+            const query = `
+              query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  issue(number: $number) {
+                    id
+                    title
+                    state
+                    labels(first:10){ nodes{ name } }
+                    trackedIssues(first:50){ nodes{ number state id } }
+                  }
+                }
+              }
+            `;
+
+            const result = await github.graphql(query, { owner, repo, number: issueNumber });
+            const issue = result.repository.issue;
+
+            // Checa labels
+            const labels = issue.labels.nodes.map(l => l.name);
+
+            // Workflow: user-story → Backlog, task → Ready
+            if (labels.includes('user-story')) {
+              console.log(`User-story #${issueNumber} detected → Backlog`);
+              // Aqui você pode adicionar a mutation para mover para Backlog
+            }
+
+            if (labels.includes('task')) {
+              console.log(`Task #${issueNumber} detected → Ready`);
+              // Aqui você pode adicionar a mutation para mover para Ready
+            }
+
+            // Se for user-story, checa sub-issues
+            if (labels.includes('user-story')) {
+              const subIssues = issue.trackedIssues.nodes;
+              const openSubIssues = subIssues.filter(si => si.state === "OPEN");
+
+              if (openSubIssues.length === 0 && subIssues.length > 0) {
+                console.log(`✅ Todas as sub-issues fechadas. Move user-story #${issueNumber} para Done.`);
+                // Mutation para mover item no Project V2 → Done
+              } else {
+                console.log(`⏳ User-story #${issueNumber} ainda tem ${openSubIssues.length} sub-issues abertas.`);
+              }
+            }
