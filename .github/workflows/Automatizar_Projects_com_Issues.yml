@@ -21,9 +21,9 @@ jobs:
             const repo = context.repo.repo;
 
             // IDs das colunas do Project V2
-            const BACKLOG_COLUMN_ID = "ID_DA_COLUNA_BACKLOG";
-            const READY_COLUMN_ID = "ID_DA_COLUNA_READY";
-            const DONE_COLUMN_ID = "ID_DA_COLUNA_DONE";
+            const BACKLOG_COLUMN_ID = "f75ad846";
+            const READY_COLUMN_ID = "61e4505c";
+            const DONE_COLUMN_ID = "98236657";
 
             // Consulta issue e sub-issues
             const query = `
