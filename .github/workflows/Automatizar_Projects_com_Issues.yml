@@ -20,73 +20,146 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            // IDs das colunas do Project V2
-            const BACKLOG_COLUMN_ID = "f75ad846";
-            const READY_COLUMN_ID = "61e4505c";
-            const DONE_COLUMN_ID = "98236657";
-
-            // Consulta issue e sub-issues
-            const query = `
-              query($owner: String!, $repo: String!, $number: Int!) {
-                repository(owner: $owner, name: $repo) {
-                  issue(number: $number) {
-                    id
-                    title
-                    state
-                    labels(first:10){ nodes{ name } }
-                    trackedIssues(first:50){ nodes{ number state id } }
+            // SUBSTITUA AQUI
+            const PROJECT_ID        = "PVT_kwHOCkTTTs4BCts3";      // node id do Project V2 (PNI_...)
+            const STATUS_FIELD_ID   = "PVTSSF_lAHOCkTTTs4BCts3zg02C_4"; // node id do campo Status (PVTSSF_... ou similar)
+            const OPTION_BACKLOG_ID = "f75ad846";   // option id para "Backlog"
+            const OPTION_READY_ID   = "61e4505c";     // option id para "Ready"
+            const OPTION_DONE_ID    = "98236657";      // option id para "Done"
+            // FIM SUBSTITUIR
+            
+            (async () => {
+              try {
+                const owner = context.repo.owner;
+                const repo = context.repo.repo;
+                const issueNumber = context.issue.number;
+            
+                // 1) Buscar o issue com informações (inclui issue.node id)
+                const issueQuery = `
+                  query($owner:String!, $repo:String!, $number:Int!) {
+                    repository(owner:$owner, name:$repo) {
+                      issue(number:$number) {
+                        id        # node id do issue (contentId)
+                        number
+                        title
+                        labels(first:20){ nodes{ name } }
+                        trackedIssues(first:50) { nodes { number state id } }
+                      }
+                    }
+                  }`;
+                const iq = await github.graphql(issueQuery, { owner, repo, number: issueNumber });
+                const issue = iq.repository.issue;
+                const labels = (issue.labels.nodes || []).map(n => n.name);
+            
+                // 2) Função para encontrar project item (se já existir), retornando projectItem.id
+                async function findProjectItemForIssue() {
+                  const query = `
+                    query($projectId: ID!, $first:Int!) {
+                      node(id:$projectId) {
+                        ... on ProjectV2 {
+                          items(first:$first) {
+                            nodes {
+                              id
+                              content {
+                                ... on Issue {
+                                  number
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }`;
+                  const res = await github.graphql(query, { projectId: PROJECT_ID, first: 100 });
+                  const items = res.node.items.nodes || [];
+                  const found = items.find(it => it.content && it.content.number === issue.number);
+                  return found ? found.id : null;
+                }
+            
+                // 3) Função para adicionar issue ao project (retorna projectItemId)
+                async function addIssueToProject() {
+                  // tenta adicionar; se já existir, fallback pra procurar
+                  try {
+                    const addMutation = `
+                      mutation($projectId: ID!, $contentId: ID!) {
+                        addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                          item { id }
+                        }
+                      }`;
+                    const add = await github.graphql(addMutation, { projectId: PROJECT_ID, contentId: issue.id });
+                    return add.addProjectV2ItemById.item.id;
+                  } catch (e) {
+                    // se falhar (por ex já existe), procura item
+                    return await findProjectItemForIssue();
                   }
                 }
+            
+                // 4) Função para setar o campo Status do item (usa projectItemId)
+                async function setStatus(projectItemId, optionId) {
+                  const mutation = `
+                    mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                      updateProjectV2ItemFieldValue(input: {
+                        projectId: $projectId,
+                        itemId: $itemId,
+                        fieldId: $fieldId,
+                        value: { singleSelectOptionId: $optionId }
+                      }) {
+                        projectV2Item { id }
+                      }
+                    }`;
+                  await github.graphql(mutation, {
+                    projectId: PROJECT_ID,
+                    itemId: projectItemId,
+                    fieldId: STATUS_FIELD_ID,
+                    optionId
+                  });
+                }
+            
+                // 5) A lógica principal
+                // - se issue é task -> adicionar ao project e setar Ready
+                // - se issue é user-story -> adicionar ao project e setar Backlog
+                // - se user-story e todas sub-issues fechadas -> setar Done
+            
+                let projectItemId = await findProjectItemForIssue();
+                if (!projectItemId) {
+                  // tenta adicionar (retorna project item id)
+                  projectItemId = await addIssueToProject();
+                }
+            
+                if (!projectItemId) {
+                  console.log(`Não foi possível obter project item para issue #${issue.number}.`);
+                  return;
+                }
+            
+                if (labels.includes('task')) {
+                  console.log(`Issue #${issue.number} tem label task → adicionando e setando Ready`);
+                  await setStatus(projectItemId, OPTION_READY_ID);
+                  return;
+                }
+            
+                if (labels.includes('user-story')) {
+                  console.log(`Issue #${issue.number} é user-story → adicionando e setando Backlog (se aplicável)`);
+            
+                  // conta sub-issues vinculadas abertas
+                  const tracked = issue.trackedIssues.nodes || [];
+                  const openTracked = tracked.filter(si => si.state === "OPEN");
+            
+                  // garante Backlog (quando é criado/rotulado)
+                  await setStatus(projectItemId, OPTION_BACKLOG_ID);
+            
+                  if (tracked.length > 0 && openTracked.length === 0) {
+                    console.log(`Todas sub-issues fechadas → setando Done`);
+                    await setStatus(projectItemId, OPTION_DONE_ID);
+                  } else {
+                    console.log(`User-story tem ${openTracked.length} sub-issues abertas.`);
+                  }
+                  return;
+                }
+            
+                console.log(`Issue #${issue.number} não tem label task nem user-story → nada a fazer.`);
+              } catch (err) {
+                console.log("Erro no script:", err);
+                throw err;
               }
-            `;
-            const result = await github.graphql(query, { owner, repo, number: issueNumber });
-            const issue = result.repository.issue;
-            const labels = issue.labels.nodes.map(l => l.name);
-
-            // Função para adicionar item ao Project V2
-            async function addItemToColumn(columnId) {
-              await github.graphql(`
-                mutation($columnId: ID!, $contentId: ID!) {
-                  addProjectV2ItemById(input: {projectId: $columnId, contentId: $contentId}) {
-                    item { id }
-                  }
-                }
-              `, { columnId, contentId: issue.id });
-              console.log(`✅ Issue #${issueNumber} adicionada à coluna.`);
-            }
-
-            // Função para mover item no Project V2
-            async function moveItem(columnId) {
-              await github.graphql(`
-                mutation($itemId: ID!, $columnId: ID!) {
-                  moveProjectV2Item(input: {itemId: $itemId, destinationId: $columnId}) {
-                    clientMutationId
-                  }
-                }
-              `, { itemId: issue.id, columnId });
-              console.log(`✅ Issue #${issueNumber} movida para a coluna.`);
-            }
-
-            // Workflow: user-story → Backlog, task → Ready
-            if (labels.includes('user-story')) {
-              console.log(`User-story #${issueNumber} → Backlog`);
-              await addItemToColumn(BACKLOG_COLUMN_ID);
-            }
-
-            if (labels.includes('task')) {
-              console.log(`Task #${issueNumber} → Ready`);
-              await addItemToColumn(READY_COLUMN_ID);
-            }
-
-            // Se for user-story, checa sub-issues
-            if (labels.includes('user-story')) {
-              const subIssues = issue.trackedIssues.nodes;
-              const openSubIssues = subIssues.filter(si => si.state === "OPEN");
-
-              if (openSubIssues.length === 0 && subIssues.length > 0) {
-                console.log(`✅ Todas as sub-issues fechadas. Move user-story #${issueNumber} → Done.`);
-                await moveItem(DONE_COLUMN_ID);
-              } else {
-                console.log(`⏳ User-story #${issueNumber} ainda tem ${openSubIssues.length} sub-issues abertas.`);
-              }
-            }
+            })();
+            
