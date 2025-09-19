@@ -1,0 +1,545 @@
+📌 Resumo – Histórias de Usuário (User Stories)
+1️⃣ Introdução ao minicurso
+
+O curso é dividido em módulos curtos sobre histórias de usuário, com exemplos e práticas.
+
+Base principal: livro User Stories Applied de Mike Cohn, considerado referência.
+
+Estrutura do curso:
+
+Boas-vindas e introdução.
+
+Introdução às histórias de usuário.
+
+Exemplos práticos (sistemas de reserva de viagens, e-commerce, busca de empregos).
+
+Modelagem do papel do usuário (personas, UX).
+
+Diretrizes para escrever boas histórias (INVEST, Spider).
+
+Planejamento e priorização em projetos (Scrum, Sprints).
+
+Conclusões e definições.
+
+2️⃣ O que é uma História de Usuário (User Story)?
+
+Uma história curta do ponto de vista do usuário, descrevendo o valor que ele percebe no produto.
+
+Serve como lembrete ou placeholder:
+
+Não é uma especificação detalhada.
+
+Facilita conversas face a face entre Product Owner (PO) e time de desenvolvimento.
+
+Deve ser curta e entregue rapidamente (ideal: <= 2 semanas).
+
+Não substitui documentação completa em setores que exigem auditoria legal (ex.: aviação).
+
+3️⃣ Objetivos das Histórias de Usuário
+
+Capturar requisitos de forma compreensível pelo cliente.
+
+Incentivar comunicação contínua entre equipe e stakeholders.
+
+Permitir entregas rápidas e incrementais do software.
+
+Servir como base para planejamento de Sprints em métodos ágeis.
+
+Evitar mal-entendidos da linguagem natural (ambiguidade).
+
+4️⃣ Estrutura de uma User Story
+
+Template clássico:
+
+Enquanto [papel/usuário], eu quero [ação/objetivo] para [benefício]
+
+Exemplo:
+
+Título: Processar pagamento
+Descrição: Enquanto cliente online, quero pagar pelos itens no meu carrinho para que eu possa receber os produtos.
+
+Partes essenciais:
+
+Quem → papel/usuário.
+
+O que → objetivo ou ação desejada.
+
+Por quê → benefício ou valor que será entregue.
+
+Dicas:
+
+Escrever do ponto de vista do usuário, não do sistema.
+
+Evitar termos técnicos, como banco de dados ou MVC.
+
+Pode ter um verso do cartão com detalhes, critérios de aceitação ou fluxos, mas não substitui especificação completa.
+
+5️⃣ Comparação com Casos de Uso
+
+Histórias de usuário: informais, curtas, focadas no valor para o usuário.
+
+Casos de uso: detalhados, com fluxos principal e alternativo, ideais para requisitos complexos.
+
+Um caso de uso pode englobar várias histórias de usuário, mas nem sempre.
+
+Para requisitos simples (CRUD), histórias de usuário são suficientes; para requisitos complexos, pode-se detalhar em caso de uso.
+
+6️⃣ Vantagens das Histórias de Usuário
+
+Compreensíveis: escritas pelo PO na linguagem do cliente.
+
+Memoráveis: pequenas histórias ajudam a lembrar detalhes importantes.
+
+Entregáveis rapidamente: permitem planejamento de Sprints ágeis (uma ou duas semanas).
+
+Incentivam design participativo: clientes, testadores e desenvolvedores podem colaborar na mesma história.
+
+Flexíveis: suportam desenvolvimento iterativo e incremental.
+
+7️⃣ Por que usar histórias em vez de documentação extensa
+
+Documentação detalhada não garante software correto ou útil.
+
+Linguagem natural é ambígua; histórias ajudam a focar na conversa e no entendimento real do requisito.
+
+Evitam o efeito “telefone sem fio”: requisito escrito =/= requisito desejado.
+
+Permitem validação contínua com o cliente antes da implementação.
+
+8️⃣ Planejamento e Prioridades
+
+Histórias devem ser priorizadas pelo valor que trazem ao cliente.
+
+Permitem identificar quais devem ser implementadas primeiro em Sprints.
+
+Cada história deve ter tamanho adequado para ser entregue em poucas horas ou dias.
+
+Facilitam entregas incrementais, iterativas e desenvolvimento interativo.
+
+1. Os 3 Cs de Ron Jeffries
+
+Ron Jeffries, um dos criadores do XP (Extreme Programming), propôs que cada história de usuário é composta por três elementos: Card (Cartão), Conversation (Conversa) e Confirmation (Confirmação).
+
+Card (Cartão)
+
+Um lembrete físico ou digital da história.
+
+Contém: título da história, estimativa, observações e, opcionalmente, alguns testes ou critérios de aceitação.
+
+Serve apenas para iniciar a conversa, não é detalhado.
+
+Conversation (Conversa)
+
+A história é detalhada durante a conversa entre o time e o cliente.
+
+Permite esclarecer os requisitos, discutir alternativas e entender o valor real para o usuário.
+
+Confirmation (Confirmação)
+
+Define como o cliente valida que a história foi implementada corretamente.
+
+Geralmente descrita como critério de aceitação ou testes de aceitação, que indicam quando a história está completa.
+
+2. Critérios de Aceitação
+
+Definidos pelo cliente ou Product Owner.
+
+Conjunto de condições que devem ser atendidas para a história ser considerada completa.
+
+Permitem que o time de desenvolvimento saiba exatamente quando o trabalho está finalizado.
+
+Podem ser automatizados usando frameworks de BDD (Behavior Driven Development) como Cucumber, em sintaxe Gherkin:
+
+Exemplo de Gherkin:
+Dado que o usuário não está logado
+Quando ele digita nome de usuário válido e senha inválida
+Então o sistema retorna uma mensagem de erro genérica e reexibe o formulário de login
+
+3. Histórias de usuário técnicas
+
+    Nem todas as histórias beneficiam diretamente o usuário final.
+
+    Histórias técnicas suportam requisitos não funcionais, como escalabilidade ou infraestrutura.
+
+    Exemplos:
+
+        Upgrade de servidor de aplicação.
+
+        Substituição do banco de dados para suportar mais transações simultâneas.
+
+4. Detalhes de uma história de usuário
+
+    Uma história pode ser quebrada em sub-histórias menores para maior granularidade.
+
+    Detalhes podem ser colocados no verso do cartão (ex.: fluxo principal, dados, testes de aceitação).
+
+    Quanto menor a história, mais fácil de estimar, implementar e testar.
+
+5. Diferença entre histórias de usuário e casos de uso
+Aspecto	             História de usuário	                           Caso de uso
+Escopo	        Pequeno, entrega em poucos dias	           Maior, pode envolver múltiplos cenários
+Formalidade	    Mais informal	                           Mais detalhado e documentado
+Foco	        Benefício para o usuário	               Registro do requisito e fluxo completo
+Quando usar	    Cenários simples ou pequenos objetivos	   Cenários complexos ou que exigem documentação
+
+6. Modelagem do papel do usuário
+
+    Evitar escrever histórias genéricas para "usuário".
+
+    Identificar papéis distintos ajuda a capturar objetivos e necessidades diferentes:
+
+        Ex.: Cliente frequente, administrador, agendador, premium, etc.
+
+    Cada papel tem atributos, habilidades e objetivos específicos com o software.
+
+7. Persona
+
+    Representação imaginária e detalhada de um papel de usuário.
+
+    Ajuda a entender melhor o cliente, suas necessidades, preferências e comportamento.
+
+    Pode incluir: idade, profissão, frequência de uso, objetivos, frustrações, dispositivos utilizados.
+
+    Pode-se criar personas principais, secundárias e terciárias conforme o foco do software.
+
+Exemplo de persona:
+
+    Nome: Jin
+
+    Cargo: Vice-presidente de Marketing
+
+    Frequência de viagens: semanal, mesma rota
+
+    Experiência com software: rápida aprendizagem, intolerante a bugs e lentidão
+
+    Objetivo: agendar voos com eficiência sem frustrações
+
+Módulo 5 – Como escrever boas histórias de usuário (Parte 2)
+1. Acrônimo INVEST
+
+O INVEST é um checklist para verificar se uma história de usuário está bem escrita:
+
+I – Independente:
+
+Idealmente, cada história deve poder ser planejada e implementada separadamente.
+
+Observação: “independente” refere-se ao valor entregue, não apenas à independência funcional.
+
+Exemplo:
+
+História 1: Retornar lista de hóspedes online
+
+História 2: Ordenar lista por ordem alfabética
+
+Apesar da dependência funcional (ordenar depende da lista existir), cada uma entrega valor independente.
+
+N – Negociável:
+
+Histórias de usuário são “placeholders” para conversa, não contratos rígidos.
+
+Escopo e detalhes podem ser ajustados junto ao cliente.
+
+Exemplo: Pagamento por oferta de emprego com cartão de crédito — as bandeiras aceitas podem ser discutidas.
+
+V – Valor:
+
+Toda história deve trazer valor para o usuário ou stakeholders (ex.: empresa, desenvolvedores).
+
+Pode ser valor direto (usuário final) ou indireto (histórias técnicas para desenvolvedores).
+
+Exemplo: Conexões com banco de dados via Connection Pool aumentam desempenho do sistema, valorizando o software para o usuário final.
+
+E – Estimável:
+
+É necessário estimar esforço de implementação para planejar Sprints.
+
+Dicas:
+
+Estude o domínio para estimar corretamente.
+
+Crie histórias menores (evita complexidade excessiva).
+
+Use Spikes (prototipagem) para explorar novas tecnologias ou desafios técnicos antes da estimativa final.
+
+S – Small (Pequena):
+
+Histórias menores facilitam estimativa, planejamento e entrega dentro do Sprint.
+
+Epic: histórias grandes que precisam ser quebradas em histórias menores.
+
+Exemplo: Postagem de currículo → grande demais, incluir seções separadas de educação, experiência, publicações, etc.
+
+T – Testável:
+
+A história deve permitir verificação de cumprimento do critério de aceitação.
+
+Exemplo:
+
+Requisito genérico: “Software fácil de usar” → difícil de testar
+
+Melhor: “Novato deve completar funcionalidades sem treinamento” → testável
+
+Performance: “Novas telas devem aparecer em até 2 segundos em 95% dos acessos”
+
+2. Observações importantes
+
+Detalhes complexos devem ser colocados no verso do cartão ou documentados como critérios de aceitação e testes.
+
+Evitar excesso de detalhes na frente da história, mas também não deixar muito genérico.
+
+Histórias técnicas e regulatórias também seguem INVEST, mas podem não seguir o template “Como [papel] eu quero [ação] para [valor]”.
+
+Quebrar histórias grandes ajuda a manter velocidade média de entrega do time (métrica de Sprint e velocidade).
+
+3. Exemplos práticos
+
+Pagamento por cartão:
+
+Frente do cartão: “Como empresa, quero pagar por uma oferta de emprego com cartão de crédito”
+
+Verso do cartão: bandeiras aceitas, regras de validação, testes automatizados
+
+Connection Pool:
+
+História técnica: “Até 50 usuários devem usar a aplicação com apenas 5 licenças de banco de dados”
+
+Benefício: melhora desempenho e gestão de licenças.
+
+Tratamento de erros:
+
+História técnica: padronizar logs e mensagens de erro
+
+Valor: consistência para o usuário final e manutenção do software.
+1. Quebrando histórias grandes com SPIDER
+
+SPIDER é uma técnica para dividir épicos ou histórias grandes em histórias menores, entregáveis dentro de um Sprint, sem quebrar por camadas funcionais (ex.: apenas interface ou apenas banco de dados). Cada letra do SPIDER representa uma abordagem para quebrar histórias:
+
+S – Size (Tamanho)
+
+Histórias muito grandes podem prejudicar a velocidade do time.
+
+Se a história é gigante, é arriscado que não seja concluída no Sprint.
+
+Dividir histórias grandes em menores ajuda a estimar, planejar e motivar o time, entregando valor mais rápido para o cliente.
+
+Técnicas:
+
+Criar spikes: protótipos ou pesquisas para entender requisitos complexos.
+
+Dividir caminhos da história (cenários principais e alternativos).
+
+P – Paths (Caminhos)
+
+Quebra a história em diferentes caminhos ou cenários:
+
+Ex.: Sistema de pagamento:
+
+Cartão de crédito → Visa
+
+Cupom de desconto
+
+PayPal
+
+Cada caminho vira uma história menor e implementável.
+
+I – Interfaces
+
+Quebra por tipo de interface ou dispositivo:
+
+Web, Android, iOS
+
+Diferentes navegadores (Chrome, Edge, etc.)
+
+Também se aplica a diferentes formatos de dados (CSV, XML, Excel).
+
+D – Data (Dados)
+
+Quebra a história baseada em dados ou formulários:
+
+Ex.: Cadastro de cliente:
+
+Primeiro Sprint → informações de endereço
+
+Segundo Sprint → informações de pagamento
+
+Permite entregar valor incremental sem esperar completar todo o cadastro.
+
+E – Exceptions / Rules (Regras)
+
+Quebra baseada em regras de negócio:
+
+Requisitos complexos podem ser implementados parcialmente.
+
+Ex.: Algoritmo complexo pode ser feito em etapas, implementando primeiro a parte mais simples.
+
+2. Diretrizes para boas histórias de usuário
+
+Essas diretrizes vêm do livro do Mike Cohn (e complementadas com práticas atuais):
+
+Objetivo
+
+Sempre inicie com o objetivo do usuário:
+
+Ex.: “Enquanto pessoa que procura emprego, quero postar meu currículo para me candidatar a vagas.”
+
+
+O objetivo guia a implementação e garante valor entregue ao cliente.
+
+Fatiamento vertical
+
+Evite quebrar por camadas funcionais (UI, lógica, banco de dados separadamente).
+
+Prefira fatiar verticalmente, passando por todas as camadas da aplicação.
+
+Ex.: Submeter currículo → tela, lógica de negócio, banco de dados.
+
+Evite histórias operacionais
+
+Histórias contínuas e repetitivas (“gerenciar ofertas de emprego”) não são boas histórias de usuário.
+
+Prefira escrever histórias que demonstrem valor imediato ao usuário.
+
+Restrições
+
+Documente requisitos não funcionais e restrições:
+
+Ex.: Tempo máximo de transação, disponibilidade do sistema, compatibilidade com versões.
+
+Restrições são críticas para o sucesso do requisito.
+
+Horizonte de detalhamento
+
+Detalhe histórias apenas para os próximos 2–3 Sprints.
+
+Requisitos muito à frente não precisam ser detalhados.
+
+Para itens futuros importantes, escreva como épicos ou temas.
+
+Evite detalhes de UI no requisito
+
+Descrever menus suspensos, botões ou layouts trava a criatividade do desenvolvedor.
+
+Prefira mostrar protótipos ou wireframes.
+
+Papel do usuário
+
+Sempre especifique o papel do ator:
+
+Correto: “Enquanto aluno, quero me inscrever em disciplina…”
+
+Incorreto: “Enquanto usuário, quero…” (genérico demais).
+
+Cuidado com plural
+
+Use singular para evitar ambiguidades:
+
+Correto: “Uma pessoa que procura emprego pode postar seu currículo.”
+
+Incorreto: “Pessoas que procuram emprego podem postar currículos.”
+
+Histórias como lembrete
+
+História de usuário é placeholder para conversa com o cliente.
+
+O texto da história é menos importante que a discussão com o cliente.
+
+✅ Resumo prático
+
+SPIDER ajuda a quebrar épicos em histórias menores e entregáveis.
+
+Fatiamento vertical + valor incremental → menor risco arquitetural e maior motivação do time.
+
+Histórias bem escritas seguem regras claras: objetivo, papel do usuário, valor, restrições, tamanho adequado e simplicidade.
+
+Módulo 6: Planejamento de histórias de usuário
+1. Contexto de projeto
+
+Projetos têm início e fim e são divididos em sprints (períodos de entrega de valor).
+
+O Product Backlog contém o conjunto de histórias de usuário, priorizado conforme valor e necessidade.
+
+Desafio: o backlog às vezes não mostra claramente a relação entre histórias ou requisitos de um mesmo tema.
+
+2. User Story Map (Mapa de histórias de usuário)
+
+Artefato complementar ao Product Backlog.
+
+Permite visualizar:
+
+Relações entre histórias de usuário;
+
+Hierarquia e granularidade (temas → epics → histórias);
+
+Sequência lógica de uso do sistema.
+
+Estrutura:
+
+Temas: requisitos de mais alto nível (abstratos).
+
+Epics: agrupamento de funcionalidades dentro de um tema.
+
+Histórias de usuário: unidades menores, implementáveis em sprints.
+
+A disposição visual é de cima para baixo (mais detalhes) e da esquerda para a direita (sequência lógica).
+
+Possibilita determinar:
+
+MVP (Produto Mínimo Viável): funcionalidades essenciais para entregar valor ao cliente.
+
+Roadmap e milestones: marcos importantes do projeto.
+
+3. Workshops de histórias de usuário
+
+Reuniões específicas para identificação e detalhamento de requisitos.
+
+Dicas para condução:
+
+Ter visão clara do produto e roadmap inicial.
+
+Usar personas para entender melhor o cliente.
+
+Focar apenas nos requisitos do horizonte curto (2-3 sprints).
+
+Escrever critérios de aceitação (AC) no verso da história de usuário.
+
+Evitar histórias muito grandes (dividi-las em unidades menores).
+
+Garantir a presença dos stakeholders corretos e ambiente adequado (arejado, coffee breaks, engajamento).
+
+Módulo 7: Conclusão e glossário
+Principais definições:
+
+História de usuário (User Story): relato curto do ponto de vista do usuário sobre valor esperado.
+
+Feature / Epic: grupo de histórias de usuário; história maior que deve ser quebrada em unidades menores.
+
+História de usuário técnica: não traz valor direto ao cliente, mas agrega valor ao negócio ou desenvolvedor (ex.: escalabilidade, performance).
+
+Product Backlog: contém três níveis de requisitos funcionais:
+
+Temas (mais amplos)
+
+Epics / Features (grupos de funcionalidades)
+
+Histórias de usuário (implementáveis em sprints)
+
+Boas práticas gerais
+
+Sempre escrever critérios de aceitação para cada história.
+
+Detalhar apenas o que será necessário nos próximos sprints.
+
+Usar US Story Map para visualizar relacionamentos e priorização.
+
+Identificar MVP e roadmap de entregas com milestones.
+
+Histórias técnicas podem ser estratégicas e devem ser priorizadas quando trazem valor indireto.
+
+Referências sugeridas
+
+Mike Cohn:
+
+Livro clássico: Histórias de usuários aplicadas (anos 2000).
+
+Site: BetterStories.com
+

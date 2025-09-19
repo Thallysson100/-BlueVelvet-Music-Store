@@ -1,0 +1,103 @@
+📌 Product Backlog
+
+Principal artefato do Scrum: lista única de tudo que precisa ser feito para o produto (funcionalidades, requisitos, tarefas, aquisições, configurações etc.).
+
+Formato livre: pode estar em histórias de usuário, casos de uso, tarefas técnicas, épicos/temas etc.
+
+Prioridade de cima para baixo: o que está no topo tem mais valor de negócio.
+
+Responsabilidades:
+
+Product Owner (PO): dono do Product Backlog. Ele prioriza itens (por valor de negócio/ROI).
+
+Time de desenvolvimento: estima esforço dos itens (em pontos de história).
+
+Estimativas relativas: normalmente com Planning Poker usando sequência Fibonacci (1,2,3,5,8,13…).
+
+Granularidade:
+
+Itens próximos do Sprint atual → mais detalhados (histórias de usuário).
+
+Itens futuros → menos detalhados (épicos/temas).
+
+📌 Sprint Planning (Reunião de Planejamento do Sprint)
+
+Ocorre no 1º dia do Sprint, dividida em duas partes:
+
+1️⃣ Parte 1 – O “o quê”
+
+Revisão/atualização do Product Backlog.
+
+Product Owner apresenta prioridades.
+
+Foco em ROI e valor de negócio.
+
+Seleção dos itens que podem entrar no Sprint.
+
+2️⃣ Parte 2 – O “como”
+
+O Time de Desenvolvimento estima esforço (se ainda não feito).
+
+Quebra os itens selecionados em tarefas menores → Sprint Backlog.
+
+Essas tarefas geralmente são medidas em horas (diferente dos pontos de história).
+
+Sugere-se tarefas ≤16h para facilitar acompanhamento.
+
+📌 Sprint Backlog
+
+Artefato produzido na 2ª parte do Sprint Planning.
+
+É um quadro (Kanban) com as tarefas resultantes da quebra das histórias do Sprint.
+
+Tarefas movimentam-se entre colunas: A Fazer → Em Progresso → Concluído.
+
+Pode ter uma coluna de impedimentos (Scrum Master ajuda a resolver).
+
+📌 Velocidade (Velocity)
+
+Pontos de história entregues por Sprint.
+
+Usada para prever prazos e releases.
+
+Não é atrelada a horas → é esforço relativo.
+
+Ex.: Se seu time entrega 8 pontos por Sprint e o Backlog tem 37 pontos → ≈5 Sprints para completar.
+
+📌 Plano de Liberação (Release Planning)
+
+Agrupa Sprints para prever entregas maiores.
+
+Ex.: “Primeira release após Sprint 2”.
+
+📌 Definição de Pronto (“Definition of Done”)
+
+Critérios acordados que dizem quando algo está realmente finalizado.
+
+Essencial para quebrar histórias em tarefas e saber se estão completas.
+
+📌 Ciclo no Scrum
+
+Vários Sprints do mesmo tamanho (recomendação ≤30 dias).
+
+Cada Sprint:
+
+1º dia → Planejamento.
+
+Dias intermediários → Desenvolvimento & Testes.
+
+Último dia → Revisão (demo) + Retrospectiva (melhoria do processo).
+
+💡 Dica para lembrar rápido:
+
+Product Backlog = lista de o que fazer (priorizado pelo PO).
+
+Sprint Backlog = lista de como fazer no Sprint (criado pelo time).
+
+Estimativas = pontos (histórias) no backlog, horas (tarefas) no Sprint backlog.
+
+Velocidade = quantos pontos o time entrega por Sprint.
+
+Release Planning = previsão de entregas maiores (quantos Sprints para chegar lá).
+
+Quer que eu monte um esquema visual (tipo mapa mental) desse conteúdo para você estudar de forma rápida? (fica ótimo para revisões antes de prova).
