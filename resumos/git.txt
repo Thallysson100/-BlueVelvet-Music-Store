@@ -1,0 +1,53 @@
+git add <arquivo> – move as alterações do diretório de trabalho para a staging area (área de preparação).
+
+git add . – adiciona todas as alterações para a staging area.
+
+git commit – grava as alterações da staging area no repositório (cria um novo commit).
+
+git checkout – traz arquivos do repositório para o diretório de trabalho (muda de branch ou versão).
+
+git log – lista os commits feitos, mostrando o SHA-1 (ID do commit).
+
+📂 Arquivos internos do Git
+
+.git/HEAD → mostra para onde o ponteiro HEAD aponta (último commit).
+
+.git/refs/heads/<branch> → contém o hash do último commit daquela branch.
+
+git status
+Mostra a situação atual do repositório:
+
+Quais arquivos foram modificados mas não estão rastreados (vermelho).
+
+Quais arquivos já estão na staging area prontos para commit (verde)
+
+git checkout -- fileName 
+-- means current branch. Overrides the files of the working
+directory with the contents of the repository
+
+git reset HEAD fileName 
+Removes fileName from stage area. The message that appears
+when running git status
+
+git reset –soft SHA-1 
+Reverts the repository to the commit with SHA-1. The files created
+after the commit you revert still appears in the working directory
+and stage area, since you are using the –soft option. If after reseting
+to a previous commit, some new commit is made, then it is
+impossible to recover the commits that existed after the comit
+target of the reset. Before using git reset, it’s a good practice to take
+a printscreen with the results of the command git log to backup the
+SHA-1 codes in case you want to revert some modifications. You can
+still undo the changes by issuing the commando git reset –soft SHA-
+1 (with the number of the SHA-1 before the first reset taken from
+the backup printscreen)
+
+git reset –mixed SHA-1 
+With the mixed option, the state area becomes
+synchronized with the repository (contrast with the stage area
+when using the --soft option).
+
+git reset –hard SHA-1
+With the hard option,the working directory, stage area and repository becomea all
+synchronized (contrast with the stage area when using the –-
+mixed option). 

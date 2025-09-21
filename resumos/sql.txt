@@ -1,0 +1,37 @@
+mysql -V 
+Shows the current version of MySQL installed
+
+mysqladmin –u root password ‘123456’ 
+Sets 123456 as the password for the user root.
+
+mysql –uroot -p 
+Prompts for the root password in order to login into
+
+MySQL 
+show databases When logged into MySQL, this command shows the
+databases managed by MySQL
+
+create database <nome>
+When logged into MySQL, this command creates a
+database. You can confirm the
+creation with the command show databases
+
+USE <nomeTabela>
+DESCRIBE <nomeTabela>
+SELECT * FROM <nometabela> (mostra os valores armazenados)
+
+CREATE TABLE <nome>(
+    <nome atributo> <tipo> <extras separados por espaço, se tiver>,
+    <nome atributo> <tipo> <extras separados por espaço, se tiver>,
+    ...
+)
+
+INSERT INTO <nome da tabela> (<nome dos atributos separados por vigula>)
+VALUES(<valores separados por vígula>);
+
+CREATE USER 'nomeDoUsuario'@'%' IDENTIFIED BY 'senha'
+GRANT ALL PRIVILEGES ON nomeBd.* TO 'nomeUsuario'@'%'; % pode acessar em outra máquina, subistitua para localhost 
+caso não poder
+
+mysql –u <nomeUsuario> -p <nomeBd> < <nomeScript.sql>
+
